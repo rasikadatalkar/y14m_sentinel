@@ -1,0 +1,260 @@
+{
+  "rules": [
+    {
+      "rule_id": "R003",
+      "rule_name": "Mandatory Fields Not Null",
+      "fields": ["loan_closing_date", "orig_loan_amount", "orig_property_value", "original_ltv", "fico_score_orig", "property_state", "property_type", "occupancy_status", "lien_position", "investor_type"],
+      "rule_type": "null_check",
+      "severity": "CRITICAL",
+      "table": "schedule_a_loans_orig",
+      "y14m_reference": "Multiple Line Items",
+      "description": "All YES-mandatory fields must be populated. Any blank value fails Fed edit checks.",
+      "error_message": "Mandatory field is blank — cannot be submitted"
+    },
+    {
+      "rule_id": "R004",
+      "rule_name": "Date Format Validation",
+      "fields": ["loan_closing_date", "first_payment_date"],
+      "rule_type": "format",
+      "severity": "HIGH",
+      "table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Items 2, 3",
+      "description": "All date fields must be valid calendar dates and not be future dates.",
+      "error_message": "Date field contains invalid or future date"
+    },
+    {
+      "rule_id": "R005",
+      "rule_name": "FICO Score Range Origination",
+      "fields": ["fico_score_orig"],
+      "rule_type": "range",
+      "severity": "CRITICAL",
+      "table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Item 13",
+      "description": "Origination FICO score must be between 300 and 850. Values of 0 or 999 are system placeholder defaults.",
+      "error_message": "fico_score_orig is outside valid range 300-850 or is a system placeholder value (0 or 999)"
+    },
+    {
+      "rule_id": "R006",
+      "rule_name": "FICO Score Range Current",
+      "fields": ["fico_score_current"],
+      "rule_type": "range",
+      "severity": "HIGH",
+      "table": "schedule_a_loans_monthly",
+      "y14m_reference": "Line Item 48",
+      "description": "Current FICO score must be between 300 and 850 when populated.",
+      "error_message": "fico_score_current is outside valid range 300-850"
+    },
+    {
+      "rule_id": "R007",
+      "rule_name": "Property State Code",
+      "fields": ["property_state"],
+      "rule_type": "reference",
+      "severity": "HIGH",
+      "table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Item 4",
+      "description": "property_state must be a valid 2-letter USPS postal code.",
+      "allowed_values": ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC","PR","VI","GU","MP","AS"],
+      "error_message": "property_state is not a valid US state or territory code"
+    },
+    {
+      "rule_id": "R008",
+      "rule_name": "Property ZIP Format",
+      "fields": ["property_zip"],
+      "rule_type": "format",
+      "severity": "MEDIUM",
+      "table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Item 5",
+      "description": "property_zip must be exactly 5 numeric digits including leading zeros.",
+      "error_message": "property_zip is not a valid 5-digit ZIP code"
+    },
+    {
+      "rule_id": "R009",
+      "rule_name": "Original Loan Amount Positive",
+      "fields": ["orig_loan_amount"],
+      "rule_type": "range",
+      "severity": "CRITICAL",
+      "table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Item 6",
+      "description": "orig_loan_amount must be a positive whole dollar amount greater than zero.",
+      "error_message": "orig_loan_amount must be greater than 0"
+    },
+    {
+      "rule_id": "R010",
+      "rule_name": "Original LTV Range",
+      "fields": ["original_ltv"],
+      "rule_type": "range",
+      "severity": "CRITICAL",
+      "table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Item 8",
+      "description": "original_ltv must be between 0.01 and 1.05. LTV above 1.05 exceeds Fed maximum.",
+      "error_message": "original_ltv is outside allowed range 0.01 to 1.05"
+    },
+    {
+      "rule_id": "R011",
+      "rule_name": "Lien Position Must Be First",
+      "fields": ["lien_position"],
+      "rule_type": "reference",
+      "severity": "CRITICAL",
+      "table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Item 17",
+      "description": "Schedule A covers first lien mortgages only. lien_position must equal 1.",
+      "error_message": "lien_position must be 1 for Schedule A — first lien only"
+    },
+    {
+      "rule_id": "R012",
+      "rule_name": "LTV Formula Cross-Check",
+      "fields": ["original_ltv", "orig_loan_amount", "orig_property_value"],
+      "rule_type": "cross_field",
+      "severity": "CRITICAL",
+      "table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Items 6, 7, 8",
+      "description": "Reported original_ltv must equal orig_loan_amount divided by orig_property_value within tolerance of 0.01.",
+      "error_message": "LTV mismatch — reported LTV does not match computed LTV (loan amount / property value). Difference exceeds 0.01 tolerance"
+    },
+    {
+      "rule_id": "R013",
+      "rule_name": "First Payment After Closing Date",
+      "fields": ["first_payment_date", "loan_closing_date"],
+      "rule_type": "cross_field",
+      "severity": "HIGH",
+      "table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Items 2, 3",
+      "description": "first_payment_date must be after loan_closing_date by 15 to 75 days.",
+      "error_message": "first_payment_date is not after loan_closing_date or gap is outside 15-75 day range"
+    },
+    {
+      "rule_id": "R014",
+      "rule_name": "CLTV Must Be Greater Than or Equal to LTV",
+      "fields": ["original_cltv", "original_ltv"],
+      "rule_type": "cross_field",
+      "severity": "HIGH",
+      "table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Items 8, 9",
+      "description": "When original_cltv is populated it must be greater than or equal to original_ltv.",
+      "error_message": "original_cltv is less than original_ltv — combined LTV cannot be less than first lien LTV"
+    },
+    {
+      "rule_id": "R015",
+      "rule_name": "DTI Back-End Greater Than or Equal to Front-End",
+      "fields": ["dti_back_end_orig", "dti_front_end_orig"],
+      "rule_type": "cross_field",
+      "severity": "MEDIUM",
+      "table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Items 11, 12",
+      "description": "When both DTI fields are populated back-end DTI must be greater than or equal to front-end DTI.",
+      "error_message": "dti_back_end_orig is less than dti_front_end_orig — back-end DTI must be greater than or equal to front-end"
+    },
+    {
+      "rule_id": "R016",
+      "rule_name": "Interest Type vs Product Type Consistency",
+      "fields": ["interest_type_orig", "product_type_orig"],
+      "rule_type": "cross_field",
+      "severity": "HIGH",
+      "table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Items 117, 133",
+      "description": "ARM products (4,5,6) must have interest_type_orig = 2. Fixed products (1,2,3) must have interest_type_orig = 1.",
+      "error_message": "interest_type_orig is inconsistent with product_type_orig — ARM product must be Variable rate and Fixed product must be Fixed rate"
+    },
+    {
+      "rule_id": "R017",
+      "rule_name": "Fixed Rate Consistency Current vs Original",
+      "fields": ["current_interest_rate", "orig_interest_rate", "interest_type_orig", "modification_type"],
+      "rule_type": "cross_field",
+      "severity": "MEDIUM",
+      "table": "schedule_a_loans_monthly",
+      "join_table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Items 44, 56, 117, 74",
+      "description": "For fixed-rate loans with no modification current interest rate must equal original interest rate.",
+      "error_message": "Fixed-rate loan has current_interest_rate different from orig_interest_rate with no recorded modification"
+    },
+    {
+      "rule_id": "R018",
+      "rule_name": "IO Flag vs IO Term Consistency",
+      "fields": ["io_flag_orig", "io_term_orig_months"],
+      "rule_type": "cross_field",
+      "severity": "HIGH",
+      "table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Items 27, 131",
+      "description": "If io_flag_orig is N then io_term_orig_months must be 0. If io_flag_orig is Y then io_term_orig_months must be greater than 0.",
+      "error_message": "io_flag_orig and io_term_orig_months are inconsistent"
+    },
+    {
+      "rule_id": "R019",
+      "rule_name": "Balloon Flag vs Balloon Term Consistency",
+      "fields": ["balloon_flag", "balloon_term_months"],
+      "rule_type": "cross_field",
+      "severity": "HIGH",
+      "table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Items 24, 25",
+      "description": "If balloon_flag is Y then balloon_term_months must be populated and greater than 0. If balloon_flag is N then balloon_term_months must be null.",
+      "error_message": "balloon_flag and balloon_term_months are inconsistent"
+    },
+    {
+      "rule_id": "R020",
+      "rule_name": "UPB Cannot Exceed Original Loan Amount",
+      "fields": ["upb_current", "orig_loan_amount"],
+      "rule_type": "cross_field",
+      "severity": "HIGH",
+      "table": "schedule_a_loans_monthly",
+      "join_table": "schedule_a_loans_orig",
+      "y14m_reference": "Line Items 6, 60",
+      "description": "Current unpaid principal balance must not exceed the original loan amount.",
+      "error_message": "upb_current exceeds orig_loan_amount — UPB cannot be greater than original loan amount"
+    },
+    {
+      "rule_id": "R021",
+      "rule_name": "Bankruptcy Chapter Required When Flag is Y",
+      "fields": ["bankruptcy_flag", "bankruptcy_chapter"],
+      "rule_type": "conditional",
+      "severity": "HIGH",
+      "table": "schedule_a_loans_monthly",
+      "y14m_reference": "Line Items 53, 54",
+      "description": "If bankruptcy_flag is Y then bankruptcy_chapter must be populated. If bankruptcy_flag is N then bankruptcy_chapter must be blank.",
+      "error_message": "bankruptcy_flag is Y but bankruptcy_chapter is blank — chapter code is required"
+    },
+    {
+      "rule_id": "R022",
+      "rule_name": "Foreclosure Referral Date Required When In Foreclosure",
+      "fields": ["foreclosure_status", "foreclosure_referral_date"],
+      "rule_type": "conditional",
+      "severity": "HIGH",
+      "table": "schedule_a_loans_monthly",
+      "y14m_reference": "Line Items 62, 65",
+      "description": "If foreclosure_status is 1 or higher then foreclosure_referral_date must be populated. If foreclosure_status is 0 this field must be blank.",
+      "error_message": "foreclosure_status indicates loan is in foreclosure but foreclosure_referral_date is blank"
+    },
+    {
+      "rule_id": "R023",
+      "rule_name": "Modification Type vs Loss Mitigation Status Consistency",
+      "fields": ["modification_type", "loss_mitigation_status"],
+      "rule_type": "conditional",
+      "severity": "HIGH",
+      "table": "schedule_a_loans_monthly",
+      "y14m_reference": "Line Items 74, 85",
+      "description": "If loss_mitigation_status is 0 then modification_type must be 0. If modification_type is greater than 0 then loss_mitigation_status must not be 0.",
+      "error_message": "modification_type and loss_mitigation_status are inconsistent — modified loan must have active loss mitigation status"
+    },
+    {
+      "rule_id": "R024",
+      "rule_name": "Current FICO Staleness Check",
+      "fields": ["fico_date_current", "reporting_asof_month"],
+      "rule_type": "conditional",
+      "severity": "MEDIUM",
+      "table": "schedule_a_loans_monthly",
+      "y14m_reference": "Line Items 48, 138, 140",
+      "description": "For portfolio loans fico_date_current must be within 90 days of the reporting month. Stale FICO fails quarterly refresh requirement.",
+      "error_message": "fico_date_current is more than 90 days before reporting period — current FICO score must be refreshed quarterly"
+    },
+    {
+      "rule_id": "R025",
+      "rule_name": "Reporting Month Format and Reasonableness",
+      "fields": ["reporting_asof_month"],
+      "rule_type": "format",
+      "severity": "INFORMATIONAL",
+      "table": "schedule_a_loans_monthly",
+      "y14m_reference": "Line Item 140",
+      "description": "reporting_asof_month must be in YYYYMM format and represent a valid calendar month between 2010 and 2 years in the future.",
+      "error_message": "reporting_asof_month is not a valid YYYYMM format or falls outside expected range"
+    }
+  ]
+}
